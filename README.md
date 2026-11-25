@@ -4,6 +4,8 @@ Ce projet a été réalisé grace à Claude Code
 Carte du monde éditable pour renseigner des événements géo-historiques de **3000 av. J.-C. à 2100**, avec une frise chronologique et un wiki de documentation.
 Cet outil créer pour servir de support pour de potentiels cours ou pour satisfaire vos désires d'archivages historique ainsi que toutes envies de chronologie dystopique.
 
+<img width="1900" height="893" alt="image" src="https://github.com/user-attachments/assets/a0b1705d-2847-4edc-80bf-7c6d1408b20b" />
+
 - **Carte** : points (villes, batailles…) et zones (empires, régions…) avec infobulle en Markdown.
 - **Frise** : faites glisser l'année (ou lecture automatique) ; la carte n'affiche que ce qui existe à cette date.
 - **Versions dans le temps** : une entité (ex. « Empire romain ») possède plusieurs géométries, chacune valable sur une période.
