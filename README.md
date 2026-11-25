@@ -1,3 +1,4 @@
+Ce projet a été réalisé grace à Claude Code
 # GeoMapHistory
 
 Carte du monde éditable pour renseigner des événements géo-historiques de **3000 av. J.-C. à 2100**, avec une frise chronologique et un wiki de documentation.
@@ -9,16 +10,58 @@ Carte du monde éditable pour renseigner des événements géo-historiques de **
 - **Accès** : lecture publique ; un seul compte administrateur peut modifier.
 - **Logiciel et contenu séparés** : l'application tourne dans Docker, tout le contenu édité vit dans le dossier `data/`.
 
-## Démarrage
+## Installation
 
-Prérequis : Docker Desktop.
+Prérequis : Docker (Docker Desktop sous Windows/macOS). Trois façons d'obtenir l'application, qui donnent le même résultat :
+
+### 1. Avec `docker-compose.yml` (recommandé)
+
+Seul le fichier [`docker-compose.yml`](docker-compose.yml) est nécessaire : les images sont téléchargées depuis Docker Hub.
 
 ```bash
 docker compose up -d
 docker compose logs api        # au premier démarrage : identifiant et mot de passe admin générés
 ```
 
-Sous Linux, lancer d'abord `./scripts/init.sh` pour que `data/` appartienne au bon utilisateur. Ouvrir http://localhost:8080 puis « Connexion ».
+Pour mettre à jour : `docker compose pull` puis `docker compose up -d`.
+
+### 2. Hors ligne, depuis une livraison `release/`
+
+Pour une machine sans accès à Internet ni à Docker Hub. Sur une machine qui a les sources, préparer la livraison :
+
+```powershell
+.\scripts\export-images.ps1            # version lue dans backend\package.json, ou -Version 0.2.0
+```
+
+Le script construit l'application et crée `release\geomaphistory-<version>\` (≈ 300 Mo) :
+
+```
+images.tar            images Docker de l'application et de la base PostGIS
+docker-compose.yml    le même que celui du projet, sans les lignes « build: »
+scripts/              init, backup, restore
+LISEZMOI.md           mode d'emploi
+```
+
+Copier ce dossier sur la machine cible, puis :
+
+```bash
+docker load -i images.tar      # une fois par version
+docker compose up -d
+```
+
+Pour mettre à jour : remplacer `images.tar`, `docker-compose.yml` et `scripts/` en gardant `data/`, puis recommencer ces deux commandes.
+
+### 3. Depuis les sources
+
+Avec le dépôt cloné, les images sont construites localement :
+
+```bash
+docker compose up -d --build
+```
+
+### Dans tous les cas
+
+Sous Linux, lancer d'abord `./scripts/init.sh` pour que `data/` appartienne au bon utilisateur. Pour reprendre une carte existante, copier son dossier `data/` à côté de `docker-compose.yml` avant le démarrage (sinon une carte vierge est créée), ou importer une archive depuis **Administration → Sauvegarde du contenu**. Ouvrir http://localhost:8080 puis « Connexion ».
 
 ### Compte administrateur
 
@@ -111,50 +154,20 @@ Les sauvegardes de `data/backups/` s'accumulent : supprimez les anciennes à la 
 
 Contrairement à l'export de l'application, l'archive du script inclut `data/.env` (et donc le compte admin). (Linux/macOS : `tar czf geomap-data.tgz data`.)
 
-## Livrer l'application sur une autre machine
-
-### Par Docker Hub
+## Publier une nouvelle version
 
 `docker-compose.yml` déclare à la fois le nom des images publiées (`image: sephiro92/…`) et leurs sources (`build:`) :
 
 ```bash
 docker compose build     # construit les images sous ces noms
-docker compose push      # les publie sur Docker Hub (après « docker login »)
+docker compose push      # les publie sur Docker Hub (après « docker login ») : option 1
 ```
-
-Sur une autre machine, seul `docker-compose.yml` est nécessaire (pas les sources) :
-
-```bash
-docker compose pull      # télécharge les images publiées
-docker compose up -d     # le compte admin s'affiche dans « docker compose logs api »
-```
-
-### Par fichier, sans registre
-
-Pour faire tourner GeoMapHistory ailleurs sans les sources, sans build et sans Internet :
 
 ```powershell
-.\scripts\export-images.ps1            # version lue dans backend\package.json, ou -Version 0.2.0
+.\scripts\export-images.ps1   # crée la livraison hors ligne dans release\ : option 2
 ```
 
-Le script construit l'application et crée `release\geomaphistory-<version>\` (≈ 300 Mo), à copier tel quel :
-
-```
-images.tar            images Docker : geomaphistory-api, geomaphistory-web et postgis (fonctionne hors ligne)
-docker-compose.yml    démarrage à partir de ces images (modèle : deploy/docker-compose.yml)
-scripts/              init, backup, restore
-LISEZMOI.md           mode d'emploi détaillé
-```
-
-Sur la machine cible :
-
-```bash
-docker load -i images.tar
-# copier le dossier data/ à côté de docker-compose.yml (sinon une carte vierge est créée)
-docker compose up -d
-```
-
-Pour une nouvelle version, on remplace `images.tar`, `docker-compose.yml` et `scripts/` en gardant `data/`. Pensez à augmenter `version` dans `backend/package.json` avant l'export pour distinguer les livraisons.
+Pensez à augmenter `version` dans `backend/package.json` pour distinguer les livraisons hors ligne.
 
 ## Architecture
 
@@ -162,8 +175,9 @@ Pour une nouvelle version, on remplace `images.tar`, `docker-compose.yml` et `sc
 docker-compose.yml
 backend/     API Fastify (TypeScript) : routes, migrations SQL, lecture/écriture de data/
 frontend/    React + MapLibre GL + Terra Draw, servi par Caddy (qui proxifie /api et /uploads)
-scripts/     initialisation, sauvegarde, restauration
+scripts/     initialisation, sauvegarde, restauration, livraison hors ligne
 data/        le contenu (hors du dépôt du logiciel, voir .gitignore)
+release/     livraisons hors ligne générées (hors du dépôt)
 ```
 
 | Service | Rôle |
