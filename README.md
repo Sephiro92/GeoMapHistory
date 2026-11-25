@@ -2,6 +2,7 @@ Ce projet a été réalisé grace à Claude Code
 # GeoMapHistory
 
 Carte du monde éditable pour renseigner des événements géo-historiques de **3000 av. J.-C. à 2100**, avec une frise chronologique et un wiki de documentation.
+Cet outil créer pour servir de support pour de potentiels cours ou pour satisfaire vos désires d'archivages historique ainsi que toutes envies de chronologie dystopique.
 
 - **Carte** : points (villes, batailles…) et zones (empires, régions…) avec infobulle en Markdown.
 - **Frise** : faites glisser l'année (ou lecture automatique) ; la carte n'affiche que ce qui existe à cette date.
@@ -10,13 +11,61 @@ Carte du monde éditable pour renseigner des événements géo-historiques de **
 - **Accès** : lecture publique ; un seul compte administrateur peut modifier.
 - **Logiciel et contenu séparés** : l'application tourne dans Docker, tout le contenu édité vit dans le dossier `data/`.
 
+# Mode facile
+## 1. Installer Docker et Docker-Compose
+En prérequis il faudra installer **Docker** et ces outils sur votre machine :
+Windows :
+(Attention sous Windows il faudrat activer le WSL2 pour autoriser la virtualisation des conteneurs. Suivre ce tuto : )
+https://docs.docker.com/desktop/setup/install/windows-install/
+
+Linux :
+https://docs.docker.com/engine/install
+
+Mac :
+https://docs.docker.com/desktop/setup/install/mac-install/
+
+## 2. Déployer 
+- Récupérer le fichier `docker-compose.yaml` et le placer dans le dossier dans lequel vous voulez lancer l'application
+- Ouvrir un terminal (CMD/PowerShell/Terminal) dans le dossier dans lequel vous avez récupérer le `docker-compose.yaml` et exécuter la commande suivante :
+```bash
+docker compose up -d
+```
+Les images devraient normalement se récupérer avant de lancer l'application dans des conteneurs docker et un dossier **data/** devrait se créer à l'endroit où se trouve le `docker-compose.yaml`
+- Maintenant que l'application est lancé vous pouvez y accéder sur le lien http://localhost:8080 
+- Pour éteindre l'application ouvrir un terminal (CMD/PowerShell/Terminal) dans le dossier dans lequel vous avez récupérer le `docker-compose.yaml` et exécuter la commande suivante :
+```bash
+docker compose down
+```
+Ou vous pouvez utiliser l'interface de **Docker Desktop** pour arrêter les conteneurs.
+
+L'application n'est qu'en mode visiteur par défaut, pour l'édition il faudra se connecter avec les identifiants renseigner dans **data/.env**, si cela est votre première session et qu'il n'y a pas de **data/.env** vous trouverez vos identifiant temporaire dans les logs du conteneur `geomaphistory-api-1` avec la commande :
+```bash
+docker compose logs api
+```
+Ou vous pouvez utiliser l'interface de **Docker Desktop** pour voir les logs
+
+### Le dossier `data/`
+
+C'est le contenu de votre carte, indépendant du logiciel. Copiez-le pour sauvegarder, ou pour transporter la carte vers une autre installation (arrêtez l'application avant de remplacer le dossier).
+
+```
+data/
+├── .env                              compte administrateur (ADMIN_USERNAME, ADMIN_PASSWORD)
+├── .session-secret                   clé de session, générée automatiquement
+├── map/<id>-<nom>.geojson            un élément de la carte et toutes ses versions dans le temps
+├── wiki/<slug>.md                    une page du wiki
+├── wiki/.history/<slug>/<date>.md    l'historique des révisions de la page
+└── uploads/                          les images
+```
+
+# Mode Normal
 ## Installation
 
 Prérequis : Docker (Docker Desktop sous Windows/macOS). Trois façons d'obtenir l'application, qui donnent le même résultat :
 
-### 1. Avec `docker-compose.yml` (recommandé)
+### 1. Avec `docker-compose.yaml` (recommandé)
 
-Seul le fichier [`docker-compose.yml`](docker-compose.yml) est nécessaire : les images sont téléchargées depuis Docker Hub.
+Seul le fichier [`docker-compose.yaml`](docker-compose.yaml) est nécessaire : les images sont téléchargées depuis Docker Hub.
 
 ```bash
 docker compose up -d
@@ -37,7 +86,7 @@ Le script construit l'application et crée `release\geomaphistory-<version>\` (�
 
 ```
 images.tar            images Docker de l'application et de la base PostGIS
-docker-compose.yml    le même que celui du projet, sans les lignes « build: »
+docker-compose.yaml    le même que celui du projet, sans les lignes « build: »
 scripts/              init, backup, restore
 LISEZMOI.md           mode d'emploi
 ```
@@ -49,7 +98,7 @@ docker load -i images.tar      # une fois par version
 docker compose up -d
 ```
 
-Pour mettre à jour : remplacer `images.tar`, `docker-compose.yml` et `scripts/` en gardant `data/`, puis recommencer ces deux commandes.
+Pour mettre à jour : remplacer `images.tar`, `docker-compose.yaml` et `scripts/` en gardant `data/`, puis recommencer ces deux commandes.
 
 ### 3. Depuis les sources
 
@@ -61,7 +110,7 @@ docker compose up -d --build
 
 ### Dans tous les cas
 
-Sous Linux, lancer d'abord `./scripts/init.sh` pour que `data/` appartienne au bon utilisateur. Pour reprendre une carte existante, copier son dossier `data/` à côté de `docker-compose.yml` avant le démarrage (sinon une carte vierge est créée), ou importer une archive depuis **Administration → Sauvegarde du contenu**. Ouvrir http://localhost:8080 puis « Connexion ».
+Sous Linux, lancer d'abord `./scripts/init.sh` pour que `data/` appartienne au bon utilisateur. Pour reprendre une carte existante, copier son dossier `data/` à côté de `docker-compose.yaml` avant le démarrage (sinon une carte vierge est créée), ou importer une archive depuis **Administration → Sauvegarde du contenu**. Ouvrir http://localhost:8080 puis « Connexion ».
 
 ### Compte administrateur
 
@@ -156,7 +205,7 @@ Contrairement à l'export de l'application, l'archive du script inclut `data/.en
 
 ## Publier une nouvelle version
 
-`docker-compose.yml` déclare à la fois le nom des images publiées (`image: sephiro92/…`) et leurs sources (`build:`) :
+`docker-compose.yaml` déclare à la fois le nom des images publiées (`image: sephiro92/…`) et leurs sources (`build:`) :
 
 ```bash
 docker compose build     # construit les images sous ces noms
@@ -172,7 +221,7 @@ Pensez à augmenter `version` dans `backend/package.json` pour distinguer les li
 ## Architecture
 
 ```
-docker-compose.yml
+docker-compose.yaml
 backend/     API Fastify (TypeScript) : routes, migrations SQL, lecture/écriture de data/
 frontend/    React + MapLibre GL + Terra Draw, servi par Caddy (qui proxifie /api et /uploads)
 scripts/     initialisation, sauvegarde, restauration, livraison hors ligne
