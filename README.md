@@ -17,6 +17,7 @@ En prérequis il faudra installer **Docker** et ces outils sur votre machine :
 
 Windows :
 https://docs.docker.com/desktop/setup/install/windows-install/
+
 (Attention sous Windows il faudrat activer le WSL2 pour autoriser la virtualisation des conteneurs. Suivre ce tuto : https://learn.microsoft.com/fr-fr/windows/wsl/install )
 
 Linux :
