@@ -15,8 +15,8 @@ Cet outil créer pour servir de support pour de potentiels cours ou pour satisfa
 ## 1. Installer Docker et Docker-Compose
 En prérequis il faudra installer **Docker** et ces outils sur votre machine :
 Windows :
-(Attention sous Windows il faudrat activer le WSL2 pour autoriser la virtualisation des conteneurs. Suivre ce tuto : )
 https://docs.docker.com/desktop/setup/install/windows-install/
+(Attention sous Windows il faudrat activer le WSL2 pour autoriser la virtualisation des conteneurs. Suivre ce tuto : https://learn.microsoft.com/fr-fr/windows/wsl/install )
 
 Linux :
 https://docs.docker.com/engine/install
