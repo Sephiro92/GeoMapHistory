@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.env
+# Le contenu édité vit à part du logiciel.
+data/
+backups/
+release/
